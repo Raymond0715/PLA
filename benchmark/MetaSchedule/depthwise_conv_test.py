@@ -117,12 +117,34 @@ def load_database(ms, work_dir: Path):
     )
 
 
+def get_schedule_class(tvm):
+    """Return Schedule from either the PLA TVM fork or upstream TVM.
+
+    PLA renames the TIR Python package to ``tvm.s_tir``.  Importing
+    MetaSchedule from that namespace while constructing schedules through
+    ``tvm.tir`` makes every replay fail before a trace is even applied.
+    """
+    s_tir = getattr(tvm, "s_tir", None)
+    if s_tir is not None and hasattr(s_tir, "Schedule"):
+        return s_tir.Schedule
+
+    tir = getattr(tvm, "tir", None)
+    if tir is not None and hasattr(tir, "Schedule"):
+        return tir.Schedule
+
+    raise RuntimeError(
+        "This TVM installation exposes neither tvm.s_tir.Schedule "
+        "nor tvm.tir.Schedule"
+    )
+
+
 def replay(args, mod, source_dir: Path, output_dir: Path) -> None:
     import tvm
     from tvm.s_tir import meta_schedule as ms
 
     dev, target = cuda_target(tvm, args.device_id, args.arch)
     register_cuda_compiler(tvm, target, args.arch)
+    Schedule = get_schedule_class(tvm)
     database = load_database(ms, source_dir)
     records = sorted(database.get_all_tuning_records(), key=record_cost)
     records = [r for r in records if record_cost(r) < 1e9][: args.top_k]
@@ -148,7 +170,7 @@ def replay(args, mod, source_dir: Path, output_dir: Path) -> None:
         try:
             # Start from the original workload, apply only the saved scheduling
             # decisions, then code-generate for the *current* A100 target.
-            sch = tvm.tir.Schedule(mod)
+            sch = Schedule(mod)
             record.trace.apply_to_schedule(sch, remove_postproc=False)
             rt_mod = tvm.build(sch.mod, target=target)
             rt_mod(*inputs, output)  # compilation/load warm-up
