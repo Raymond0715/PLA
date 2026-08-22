@@ -27,6 +27,8 @@ def check_triton():
         # "kernel_src_path=data/stencil_7x7_loop_2026_08_07_11_07_01/map2mm_idx0_sample0_S0P0-2_S0P3-8_fix.py",
         # "kernel_src_path=data/stencil_7x7_cuda/model_v1.py",
         # "kernel_src_path=../PolyLLMAgentTriton/triton_convstencil_1.py",
+        "gpu=A100",
+        "gpu_arch=['Ampere']",
         "backend=triton",
         "precision=fp16",
     ]
