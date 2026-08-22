@@ -24,6 +24,16 @@ def parser(description: str) -> argparse.ArgumentParser:
                    help="Concurrent MetaSchedule builds; lower this if CUDA compilation is slow")
     p.add_argument("--builder-timeout", type=float, default=300.0,
                    help="Timeout in seconds for each MetaSchedule build")
+    p.add_argument("--trials-per-iter", type=int, default=64,
+                   help="MetaSchedule candidates generated/built in each iteration")
+    p.add_argument("--tune-number", type=int, default=3,
+                   help="Runs averaged for each MetaSchedule candidate")
+    p.add_argument("--tune-repeat", type=int, default=1,
+                   help="Measurement repeats for each MetaSchedule candidate")
+    p.add_argument("--tune-min-repeat-ms", type=int, default=100,
+                   help="Minimum measurement time per MetaSchedule repeat; use 0-10 for large operators")
+    p.add_argument("--runner-timeout", type=float, default=30.0,
+                   help="Timeout in seconds for measuring one MetaSchedule candidate")
     p.add_argument("--work-dir", type=Path, default=None)
     p.add_argument("--seed", type=int, default=0)
     p.add_argument("--number", type=int, default=5)
@@ -65,13 +75,30 @@ def _scheduled_module(mod, target, implementation: str, work_dir: Path, args):
             raise SystemExit("--builder-workers must be positive")
         if args.builder_timeout <= 0:
             raise SystemExit("--builder-timeout must be positive")
+        if args.trials_per_iter <= 0:
+            raise SystemExit("--trials-per-iter must be positive")
+        if args.tune_number <= 0 or args.tune_repeat <= 0:
+            raise SystemExit("--tune-number and --tune-repeat must be positive")
+        if args.tune_min_repeat_ms < 0:
+            raise SystemExit("--tune-min-repeat-ms must be non-negative")
+        if args.runner_timeout <= 0:
+            raise SystemExit("--runner-timeout must be positive")
         database = ms.tune_tir(
             mod=mod, target=target, work_dir=str(work_dir),
             max_trials_global=args.trials,
-            num_trials_per_iter=min(64, args.trials), cost_model="xgb",
+            num_trials_per_iter=min(args.trials_per_iter, args.trials), cost_model="xgb",
             builder=ms.builder.LocalBuilder(
                 max_workers=args.builder_workers,
                 timeout_sec=args.builder_timeout,
+            ),
+            runner=ms.runner.LocalRunner(
+                timeout_sec=args.runner_timeout,
+                evaluator_config=ms.runner.EvaluatorConfig(
+                    number=args.tune_number,
+                    repeat=args.tune_repeat,
+                    min_repeat_ms=args.tune_min_repeat_ms,
+                    enable_cpu_cache_flush=False,
+                ),
             ),
             # TVM 0.26's Droplet post-optimizer cannot reliably parse all CUDA
             # SamplePerfectTile decisions (it may treat a categorical integer
