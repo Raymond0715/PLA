@@ -53,11 +53,19 @@ class Model(nn.Module):
 # stride = 1
 # padding = 3
 
+# batch_size = 1
+# in_channels = 32
+# kernel_size = 7
+# width = 1024
+# height = 1024
+# stride = 1
+# padding = 3
+
 batch_size = 1
-in_channels = 32
+in_channels = 8
 kernel_size = 7
-width = 1024
-height = 1024
+width = 2048
+height = 2048
 stride = 1
 padding = 3
 
