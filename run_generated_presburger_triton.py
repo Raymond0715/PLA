@@ -21,7 +21,7 @@ def check_triton():
         "ref_origin=local",
         "ref_arch_src_path=data/depthwise_conv_7x7.py",
         # "kernel_src_path=data/depthwise_conv_7x7_loop_2026_08_15_17_44_09/map2mm_idx0_sample1_S0P3-4_S0P6-2_fix.py",
-        "kernel_src_path=data/depthwise_conv_7x7_cuda/model_cutlass_autotune_v6.py",
+        "kernel_src_path=data/depthwise_conv_7x7_cuda/model_cutlass_autotune_v5.py",
         # "kernel_src_path=data/depthwise_conv_7x7_cuda/model_v1.py",
         # "ref_arch_src_path=data/stencil_7x7.py",
         # "kernel_src_path=data/stencil_7x7_loop_2026_08_07_11_07_01/map2mm_idx0_sample0_S0P0-2_S0P3-8_fix.py",
