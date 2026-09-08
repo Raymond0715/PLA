@@ -15,8 +15,8 @@ class Model(nn.Module):
 batch_size = 1
 
 def get_inputs():
-    # return [torch.rand(batch_size, 1, 10240, 10240)]
-    return [torch.rand(batch_size, 1, 4096, 4096)]
+    return [torch.rand(batch_size, 1, 10240, 10240)]
+    # return [torch.rand(batch_size, 1, 4096, 4096)]
     # return [torch.rand(batch_size, 4, 5120, 5120)]
 
 def get_init_inputs():
