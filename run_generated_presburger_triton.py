@@ -39,6 +39,8 @@ def check_triton(ref_arch_src_path=None, kernel_src_path=None, backend="triton")
         # "kernel_src_path=data/conv_7x7_loop_2026_08_31_14_10_18/map2mm_idx21_sample0_no_inter_params_perf_candidate_fix.py",
         # "ref_arch_src_path=data/conv_7x7.py",
         # "kernel_src_path=data/conv_7x7_codex_v3.py",
+        "gpu=A100",
+        "gpu_arch=['Ampere']",
         "backend=triton",
         "precision=fp16",
     ]
